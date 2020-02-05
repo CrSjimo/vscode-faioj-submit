@@ -2,8 +2,8 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { login } from './lib/login';
-import { getCompilers, submitCode } from './lib/submit';
-import { selectProblem, selectCompiler } from './lib/submit_interact';
+import { getCompilers, submitCode, getContests } from './lib/submit';
+import { selectProblem, selectCompiler, selectContest } from './lib/submit_interact';
 import * as fs from 'fs';
 import { openWebview } from './lib/webview';
 
@@ -84,6 +84,17 @@ export function activate(context: vscode.ExtensionContext) {
 				vscode.window.showErrorMessage(err.message);
 			}
 			
+		}),
+		vscode.commands.registerCommand('extension.submitProblemContest',async ()=>{
+			let hostname = vscode.workspace.getConfiguration().get('syzojSubmittor.hostname') as string;
+			let cookie = vscode.workspace.getConfiguration().get('syzojSubmittor.cookie') as string[];
+			try{
+				let contests = await getContests(hostname,cookie);
+				let contest = await selectContest(contests);
+				console.log(contest);
+			}catch(err){
+
+			}
 		})
 	)
 }

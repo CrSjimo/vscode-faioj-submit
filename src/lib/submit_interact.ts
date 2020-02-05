@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { searchProblem, SearchResult } from './submit';
-import { LanguageDefinition } from './xml_parsers';
+import { LanguageDefinition, ContestNode } from './xml_parsers';
 
 export function selectProblem(host:string):Promise<string|undefined>{
     return new Promise((resolve,reject)=>{
@@ -37,6 +37,25 @@ export function selectCompiler(langs:LanguageDefinition[]):Promise<string|undefi
         });
         compilerBox.onDidAccept(()=>{
             resolve(compilerBox.selectedItems[0].description);
+            compilerBox.dispose();
+        });
+        compilerBox.show();
+    });
+}
+export function selectContest(contestList:ContestNode[]){
+    return new Promise((resolve,reject)=>{
+        let compilerBox = vscode.window.createQuickPick();
+        compilerBox.placeholder = 'Contest';
+        compilerBox.canSelectMany = false;
+        compilerBox.items = contestList.map((contest)=>{
+            return {
+                label:contest.name,
+                description:contest.status,
+                detail:contest.path,
+            }
+        });
+        compilerBox.onDidAccept(()=>{
+            resolve(compilerBox.selectedItems[0].detail);
             compilerBox.dispose();
         });
         compilerBox.show();

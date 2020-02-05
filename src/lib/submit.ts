@@ -1,6 +1,6 @@
 import * as FormData from 'form-data';
 import * as http from 'http';
-import { parseCompilers, LanguageDefinition } from './xml_parsers';
+import { parseCompilers, LanguageDefinition, parseContestPagesAmount, parseContestList } from './xml_parsers';
 export interface SearchResult{
     name:string;
     value:number;
@@ -62,11 +62,53 @@ export function submitCode(hostname:string,probPath:string,language:string,code:
             if(err)reject(err);
             else{
                 if(res.statusCode!>=400)reject(new Error(res.statusMessage));
-                else if(res.statusCode == 200)reject(new Error('Not Logged In.'));
+                else if(res.statusCode == 200)reject(new Error('Not logged in or permission denied.'));
                 else{
                     resolve(res.headers.location);
                 }
             }
         });
     });
+}
+
+export async function getContests(hostname:string,cookie:string[]){
+    let amount = await (()=>{
+        return new Promise<number>((resolve,reject)=>{
+            http.get({hostname,path:'/contests',headers:{cookie}},(res)=>{
+                let xmlStr = '';
+                res.on('data',(chunk)=>{
+                    xmlStr+=chunk.toString();
+                }).on('end',()=>{
+                    if(res.statusCode&&res.statusCode>=400)reject(new Error(res.statusMessage));
+                    else{
+                        resolve(parseContestPagesAmount(xmlStr));
+                    }
+                })
+            }).on('error',(err)=>{
+                reject(err);
+            });
+        });
+    })();
+    let getPage = (page:number)=>{
+        return new Promise<string>((resolve,reject)=>{
+            http.get({hostname,path:`/contests?page=${page}`,headers:{cookie}},(res)=>{
+                let xmlStr = '';
+                res.on('data',(chunk)=>{
+                    xmlStr+=chunk.toString();
+                }).on('end',()=>{
+                    if(res.statusCode&&res.statusCode>=400)reject(new Error(res.statusMessage));
+                    else{
+                        resolve(xmlStr);
+                    }
+                })
+            }).on('error',(err)=>{
+                reject(err);
+            });
+        });
+    };
+    let xmlStrList:string[] = [];
+    for(let i=1;i<=amount;i++){
+        xmlStrList.push(await getPage(i));
+    }
+    return parseContestList(...xmlStrList);
 }
