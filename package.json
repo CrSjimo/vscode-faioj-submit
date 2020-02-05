@@ -1,0 +1,80 @@
+{
+	"name": "syzoj-submittor",
+	"displayName": "syzoj-submittor",
+	"description": "A code submittor for OJ based on syzoj",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.41.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onLanguage:cpp"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.submitProblem",
+				"title": "Submit current code (as problem)"
+			},
+			{
+				"command": "extension.submitProblemContest",
+				"title": "Submit current code (as problem of contest)"
+			},
+			{
+				"command": "extension.login",
+				"title": "Login"
+			},
+			{
+				"command": "extension.logout",
+				"title": "logout"
+			}
+		],
+		"configuration": {
+			"title": "SYZOJ Submittor",
+			"properties": {
+				"syzojSubmittor.hostname": {
+					"type": "string",
+					"default": "47.93.246.11",
+					"description": "OJ Hostname"
+				},
+				"syzojSubmittor.cookie": {
+					"type": "array",
+					"default": [],
+					"description": "Cookie"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint src --ext ts",
+		"watch": "tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^7.0.1",
+		"@types/node": "^12.11.7",
+		"@types/vscode": "^1.41.0",
+		"eslint": "^6.8.0",
+		"@typescript-eslint/parser": "^2.18.0",
+		"@typescript-eslint/eslint-plugin": "^2.18.0",
+		"glob": "^7.1.6",
+		"mocha": "^7.0.1",
+		"typescript": "^3.7.5",
+		"vscode-test": "^1.3.0"
+	},
+	"dependencies": {
+		"@types/md5": "^2.1.33",
+		"@types/xmldom": "^0.1.29",
+		"form-data": "^3.0.0",
+		"md5": "^2.2.1",
+		"xmldom": "^0.2.1",
+		"xpath": "0.0.27"
+	}
+}
