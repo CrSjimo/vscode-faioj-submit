@@ -1,6 +1,6 @@
 import * as FormData from 'form-data';
 import * as http from 'http';
-import { parseCompilers, LanguageDefinition, parseContestPagesAmount, parseContestList } from './xml_parsers';
+import { parseCompilers, LanguageDefinition, parseContestPagesAmount, parseContestList, parseContestProblemList, ContestProblemNode, parseContestProblemSubmitPath } from './xml_parsers';
 export interface SearchResult{
     name:string;
     value:number;
@@ -111,4 +111,38 @@ export async function getContests(hostname:string,cookie:string[]){
         xmlStrList.push(await getPage(i));
     }
     return parseContestList(...xmlStrList);
+}
+export function getContestProblemList(hostname:string,path:string,cookie:string[]){
+    return new Promise<ContestProblemNode[]>((resolve,reject)=>{
+        http.get({
+            hostname,
+            path,
+            headers:{cookie},
+        },(res)=>{
+            let payload = '';
+            res.on('data',(chunk)=>{
+                payload+=chunk.toString();
+            });
+            res.on('end',()=>{
+                resolve(parseContestProblemList(payload));
+            });
+        });
+    });
+}
+export function getContestProblemSubmitPath(hostname:string,path:string,cookie:string[]){
+    return new Promise<string>((resolve,reject)=>{
+        http.get({
+            hostname,
+            path,
+            headers:{cookie},
+        },(res)=>{
+            let payload = '';
+            res.on('data',(chunk)=>{
+                payload+=chunk.toString();
+            });
+            res.on('end',()=>{
+                resolve(parseContestProblemSubmitPath(payload));
+            });
+        });
+    });
 }

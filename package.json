@@ -1,6 +1,6 @@
 {
-	"name": "syzoj-submittor",
-	"displayName": "syzoj-submittor",
+	"name": "faioj-submittor",
+	"displayName": "faioj-submittor",
 	"description": "A code submittor for OJ based on syzoj",
 	"version": "0.0.1",
 	"engines": {
@@ -17,33 +17,81 @@
 		"commands": [
 			{
 				"command": "extension.submitProblem",
-				"title": "Submit current code (as problem)"
+				"title": "FAIOJ Submittor: Submit current code (as problem)",
+				"icon": {
+					"light": "./assets/submit.svg",
+					"dark": "./assets/submit_dark.svg"
+				}
 			},
 			{
 				"command": "extension.submitProblemContest",
-				"title": "Submit current code (as problem of contest)"
+				"title": "FAIOJ Submittor: Submit current code (as problem of contest)",
+				"icon": {
+					"dark": "./assets/submit_contest_dark.svg",
+					"light": "./assets/submit_contest.svg"
+				}
 			},
 			{
 				"command": "extension.login",
-				"title": "Login"
+				"title": "FAIOJ Submittor: Login"
 			},
 			{
 				"command": "extension.logout",
-				"title": "logout"
+				"title": "FAIOJ Submittor: Logout"
+			},
+			{
+				"command": "extension.showProblem",
+				"title": "FAIOJ Submittor: Show Problem"
+			},
+			{
+				"command": "extension.showContestProblem",
+				"title": "FAIOJ Submittor: Show Contest Problem"
 			}
 		],
+		"menus": {
+			"editor/title": [
+				{
+					"command": "extension.submitProblem",
+					"alt": "extension.submitProblemContest",
+					"when": "resourceLangId == cpp",
+					"group": "navigation"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "extension.submitProblem",
+					"when": "resourceLangId == cpp",
+					"group": "s_submit"
+				},
+				{
+					"command": "extension.submitProblemContest",
+					"when": "resourceLangId == cpp",
+					"group": "s_submit"
+				}
+			]
+		},
 		"configuration": {
-			"title": "SYZOJ Submittor",
+			"title": "FAIOJ Submittor",
 			"properties": {
-				"syzojSubmittor.hostname": {
+				"faiojSubmittor.hostname": {
 					"type": "string",
 					"default": "47.93.246.11",
-					"description": "OJ Hostname"
+					"description": "OJ Hostname."
 				},
-				"syzojSubmittor.cookie": {
+				"faiojSubmittor.cookie": {
 					"type": "array",
 					"default": [],
-					"description": "Cookie"
+					"description": "Cookie."
+				},
+				"faiojSubmittor.doAutoShowSubmission": {
+					"type": "boolean",
+					"default": false,
+					"description": "Show submission automatically when code submitted."
+				},
+				"faiojSubmittor.doShowWebviewInActiveEditor":{
+					"type":"boolean",
+					"default":false,
+					"description": "Show submissions and problems in active editor."
 				}
 			}
 		}
@@ -70,9 +118,11 @@
 		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {
+		"@types/jsdom": "^12.2.4",
 		"@types/md5": "^2.1.33",
 		"@types/xmldom": "^0.1.29",
 		"form-data": "^3.0.0",
+		"jsdom": "^16.1.0",
 		"md5": "^2.2.1",
 		"xmldom": "^0.2.1",
 		"xpath": "0.0.27"

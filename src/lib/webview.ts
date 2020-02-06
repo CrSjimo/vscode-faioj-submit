@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as http from 'http';
 export function openWebview(title:string,hostname:string,path:string,cookie:string[]){
     return new Promise((resolve,reject)=>{
+        let doShowInActive = vscode.workspace.getConfiguration().get("faiojSubmittor.doShowWebviewInActiveEditor") as boolean;
         http.get({hostname,path,headers:{cookie}},(res)=>{
             let html = '';
             res.on('data',(chunk)=>{
@@ -10,7 +11,7 @@ export function openWebview(title:string,hostname:string,path:string,cookie:stri
                 let panel = vscode.window.createWebviewPanel(
                     'submissionWebview',
                     title,
-                    vscode.ViewColumn.Active,
+                    doShowInActive?vscode.ViewColumn.Active:vscode.ViewColumn.Beside,
                     {
                         enableScripts:true,
                         enableFindWidget:true,

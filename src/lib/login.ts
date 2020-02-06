@@ -2,6 +2,7 @@ import * as md5 from 'md5';
 import * as http from 'http';
 import * as queryString from 'querystring';
 export function login(username:string,password:string,hostname:string){
+    console.log(hostname);
     return new Promise((resolve,reject)=>{
         let passwordMD5 = md5(password + "syzoj2_xxx");
         let content = queryString.encode({

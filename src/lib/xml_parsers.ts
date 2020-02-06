@@ -1,6 +1,6 @@
 import * as xpath from 'xpath'
 import {DOMParser} from 'xmldom'
-import * as fs from 'fs'
+import {JSDOM} from 'jsdom'
 export interface LanguageDefinition{
     name:string;
     displayName:string;
@@ -69,4 +69,28 @@ export function parseContestList(...xmlStrList:string[]){
         }
     }
     return contests;
+}
+
+export interface ContestProblemNode{
+    name:string;
+    score:string;
+    submissions:string;
+    index:number;
+}
+export function parseContestProblemList(xmlStr:string){
+    let contestProblems:ContestProblemNode[] = [];
+    let xmlDoc = new JSDOM(xmlStr).window.document;
+    let trSection = xmlDoc.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    for(let i=0;i<trSection.length;i++){
+        let tdSection = trSection[i].getElementsByTagName('td');
+        let score = tdSection[0].textContent?.split(/\s*/).join('') as string;
+        let name = tdSection[1].textContent?.split(/\s*/).join('') as string;
+        let submissions = tdSection[2].textContent?.split(/\s*/).join('') as string;
+        contestProblems.push({score,name,submissions,index:i+1});
+    }
+    return contestProblems;
+}
+export function parseContestProblemSubmitPath(xmlStr:string){
+    let xmlDoc = new JSDOM(xmlStr).window.document;
+    return xmlDoc.getElementById('submit_code')?.getAttribute('action') as string;
 }

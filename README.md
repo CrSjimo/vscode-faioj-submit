@@ -1,6 +1,6 @@
 # syzoj-submittor README
 
-This is the README for your extension "syzoj-submittor". After writing up a brief description, we recommend including the following sections.
+This is the README for your extension "faioj-submittor". After writing up a brief description, we recommend including the following sections.
 
 ## Features
 

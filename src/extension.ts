@@ -2,10 +2,18 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { login } from './lib/login';
-import { getCompilers, submitCode, getContests } from './lib/submit';
-import { selectProblem, selectCompiler, selectContest } from './lib/submit_interact';
+import { getCompilers, submitCode, getContests, getContestProblemList, getContestProblemSubmitPath } from './lib/submit';
+import { selectProblem, selectCompiler, selectContest, selectContestProblem } from './lib/submit_interact';
 import * as fs from 'fs';
 import { openWebview } from './lib/webview';
+//import sleep from 'yuankui-sleep';
+function sleep(ms:number){
+	return new Promise((resolve,reject)=>{
+		setTimeout(()=>{
+			resolve();
+		},ms);
+	});
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -13,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "syzoj-submittor" is now active!');
+	console.log('Congratulations, your extension "faioj-submittor" is now active!');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
@@ -39,11 +47,11 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 			if(!scope)return;
 
-			let hostname = vscode.workspace.getConfiguration().get('syzojSubmittor.hostname') as string;
+			let hostname = vscode.workspace.getConfiguration().get('faiojSubmittor.hostname') as string;
 
 			try{
 				let cookie = await login(username,password,hostname);
-				vscode.workspace.getConfiguration().update('syzojSubmittor.cookie',cookie,scope=='Global');
+				vscode.workspace.getConfiguration().update('faiojSubmittor.cookie',cookie,scope=='Global');
 				vscode.window.showInformationMessage(`Successfully logged in as ${username}.`);
 			}catch(err){
 				vscode.window.showErrorMessage(err.message);
@@ -56,11 +64,12 @@ export function activate(context: vscode.ExtensionContext) {
 			});
 			if(!scope)return;
 
-			vscode.workspace.getConfiguration().update('syzojSubmittor.cookie',[],scope=='Global');
+			vscode.workspace.getConfiguration().update('faiojSubmittor.cookie',[],scope=='Global');
 		}),
 		vscode.commands.registerCommand("extension.submitProblem",async ()=>{
-			let hostname = vscode.workspace.getConfiguration().get('syzojSubmittor.hostname') as string;
-			let cookie = vscode.workspace.getConfiguration().get('syzojSubmittor.cookie') as string[];
+			let hostname = vscode.workspace.getConfiguration().get('faiojSubmittor.hostname') as string;
+			let cookie = vscode.workspace.getConfiguration().get('faiojSubmittor.cookie') as string[];
+			let doAutoOpen = vscode.workspace.getConfiguration().get('faiojSubmittor.doAutoShowSubmission') as boolean;
 			try{
 				let code = vscode.window.visibleTextEditors[0]?.document.getText();
 				if(!code){
@@ -73,11 +82,21 @@ export function activate(context: vscode.ExtensionContext) {
 				if(!compiler)return;
 				let submissionPath = await submitCode(hostname,probPath,compiler,code,cookie);
 				//console.log(submissionPath);
-				let res = await vscode.window.showInformationMessage(`Code submitted at '${submissionPath}' successfully.`,'Show submission (in default browser)','Show submission');
-				if(res == 'Show submission (in default browser)'){
-					vscode.env.openExternal(vscode.Uri.parse(`http://${hostname}${submissionPath}`));
-				}else if(res == 'Show submission'){
-					await openWebview('Submission',hostname,submissionPath,cookie);
+				if(doAutoOpen){
+					vscode.window.showInformationMessage(`Code submitted at '${submissionPath}' successfully. Submission will be shown automatically in 3s.`,'Show submission (in default browser)').then((val)=>{
+						if(val=='Show submission (in default browser)'){
+							vscode.env.openExternal(vscode.Uri.parse(`http://${hostname}${submissionPath}`));
+						}
+					});
+					await sleep(3000);
+					openWebview('Submission',hostname,submissionPath,cookie);
+				}else{
+					let res = await vscode.window.showInformationMessage(`Code submitted at '${submissionPath}' successfully.`,'Show submission (in default browser)','Show submission');
+					if(res == 'Show submission (in default browser)'){
+						vscode.env.openExternal(vscode.Uri.parse(`http://${hostname}${submissionPath}`));
+					}else if(res == 'Show submission'){
+						openWebview('Submission',hostname,submissionPath,cookie);
+					}
 				}
 
 			}catch(err){
@@ -86,14 +105,71 @@ export function activate(context: vscode.ExtensionContext) {
 			
 		}),
 		vscode.commands.registerCommand('extension.submitProblemContest',async ()=>{
-			let hostname = vscode.workspace.getConfiguration().get('syzojSubmittor.hostname') as string;
-			let cookie = vscode.workspace.getConfiguration().get('syzojSubmittor.cookie') as string[];
+			let hostname = vscode.workspace.getConfiguration().get('faiojSubmittor.hostname') as string;
+			let cookie = vscode.workspace.getConfiguration().get('faiojSubmittor.cookie') as string[];
+			let doAutoOpen = vscode.workspace.getConfiguration().get('faiojSubmittor.doAutoShowSubmission') as boolean;
 			try{
+				let code = vscode.window.visibleTextEditors[0]?.document.getText();
+				if(!code){
+					throw new Error("Please open source code file.");
+				}
 				let contests = await getContests(hostname,cookie);
-				let contest = await selectContest(contests);
-				console.log(contest);
+				let contestPath = await selectContest(contests);
+				if(!contestPath)return;
+				let contestProblemsList = await getContestProblemList(hostname,contestPath,cookie);
+				let contestProblemID = await selectContestProblem(contestProblemsList);
+				if(!contestProblemID)return;
+				let contestProblemPath = `${contestPath}/problem/${contestProblemID}`;
+				let contestProblemSubmitPath = await getContestProblemSubmitPath(hostname,contestProblemPath,cookie);
+				let langs = await getCompilers(hostname,contestProblemPath)
+				let compiler = await selectCompiler(langs);
+				if(!compiler)return;
+				let submissionPath = await submitCode(hostname,contestProblemSubmitPath,compiler,code,cookie);
+				if(doAutoOpen){
+					vscode.window.showInformationMessage(`Code submitted at '${submissionPath}' successfully. Submission will be shown automatically in 3s.`,'Show submission (in default browser)').then((val)=>{
+						if(val=='Show submission (in default browser)'){
+							vscode.env.openExternal(vscode.Uri.parse(`http://${hostname}${submissionPath}`));
+						}
+					});
+					await sleep(3000);
+					openWebview('Submission',hostname,submissionPath,cookie);
+				}else{
+					let res = await vscode.window.showInformationMessage(`Code submitted at '${submissionPath}' successfully.`,'Show submission (in default browser)','Show submission');
+					if(res == 'Show submission (in default browser)'){
+						vscode.env.openExternal(vscode.Uri.parse(`http://${hostname}${submissionPath}`));
+					}else if(res == 'Show submission'){
+						openWebview('Submission',hostname,submissionPath,cookie);
+					}
+				}
 			}catch(err){
-
+				vscode.window.showErrorMessage(err.message);
+			}
+		}),
+		vscode.commands.registerCommand('extension.showProblem',async ()=>{
+			try{
+				let hostname = vscode.workspace.getConfiguration().get('faiojSubmittor.hostname') as string;
+				let cookie = vscode.workspace.getConfiguration().get('faiojSubmittor.cookie') as string[];
+				let probPath = await selectProblem(hostname);
+				if(!probPath)return;
+				openWebview('Show Problem',hostname,probPath,cookie);
+			}catch(err){
+				vscode.window.showErrorMessage(err.message);
+			}
+		}),
+		vscode.commands.registerCommand('extension.showContestProblem',async ()=>{
+			try{
+				let hostname = vscode.workspace.getConfiguration().get('faiojSubmittor.hostname') as string;
+				let cookie = vscode.workspace.getConfiguration().get('faiojSubmittor.cookie') as string[];
+				let contests = await getContests(hostname,cookie);
+				let contestPath = await selectContest(contests);
+				if(!contestPath)return;
+				let contestProblemsList = await getContestProblemList(hostname,contestPath,cookie);
+				let contestProblemID = await selectContestProblem(contestProblemsList);
+				if(!contestProblemID)return;
+				let contestProblemPath = `${contestPath}/problem/${contestProblemID}`;
+				openWebview('Show Problem',hostname,contestProblemPath,cookie);
+			}catch(err){
+				vscode.window.showErrorMessage(err.message);
 			}
 		})
 	)

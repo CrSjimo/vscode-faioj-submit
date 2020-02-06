@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { searchProblem, SearchResult } from './submit';
-import { LanguageDefinition, ContestNode } from './xml_parsers';
+import { LanguageDefinition, ContestNode, ContestProblemNode } from './xml_parsers';
 
 export function selectProblem(host:string):Promise<string|undefined>{
     return new Promise((resolve,reject)=>{
@@ -43,7 +43,7 @@ export function selectCompiler(langs:LanguageDefinition[]):Promise<string|undefi
     });
 }
 export function selectContest(contestList:ContestNode[]){
-    return new Promise((resolve,reject)=>{
+    return new Promise<string|undefined>((resolve,reject)=>{
         let compilerBox = vscode.window.createQuickPick();
         compilerBox.placeholder = 'Contest';
         compilerBox.canSelectMany = false;
@@ -56,6 +56,26 @@ export function selectContest(contestList:ContestNode[]){
         });
         compilerBox.onDidAccept(()=>{
             resolve(compilerBox.selectedItems[0].detail);
+            compilerBox.dispose();
+        });
+        compilerBox.show();
+    });
+}
+export function selectContestProblem(contestList:ContestProblemNode[]){
+    return new Promise((resolve,reject)=>{
+        let compilerBox = vscode.window.createQuickPick<vscode.QuickPickItem&{index:number}>();
+        compilerBox.placeholder = 'Problem';
+        compilerBox.canSelectMany = false;
+        compilerBox.items = contestList.map((contest)=>{
+            return {
+                label:contest.name,
+                description:contest.score,
+                detail:contest.submissions,
+                index:contest.index,
+            }
+        });
+        compilerBox.onDidAccept(()=>{
+            resolve(compilerBox.selectedItems[0].index);
             compilerBox.dispose();
         });
         compilerBox.show();
