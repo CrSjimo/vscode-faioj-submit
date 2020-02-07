@@ -88,9 +88,9 @@
 					"default": false,
 					"description": "Show submission automatically when code submitted."
 				},
-				"faiojSubmittor.doShowWebviewInActiveEditor":{
-					"type":"boolean",
-					"default":false,
+				"faiojSubmittor.doShowWebviewInActiveEditor": {
+					"type": "boolean",
+					"default": false,
 					"description": "Show submissions and problems in active editor."
 				}
 			}
@@ -121,10 +121,13 @@
 		"@types/jsdom": "^12.2.4",
 		"@types/md5": "^2.1.33",
 		"@types/xmldom": "^0.1.29",
+		"bufferutil": "^4.0.1",
 		"form-data": "^3.0.0",
 		"jsdom": "^16.1.0",
 		"md5": "^2.2.1",
+		"utf-8-validate": "^5.0.2",
 		"xmldom": "^0.2.1",
 		"xpath": "0.0.27"
-	}
+	},
+	"publisher": "crindzebra"
 }
