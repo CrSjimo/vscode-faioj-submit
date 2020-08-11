@@ -2,7 +2,7 @@
 	"name": "faioj-submittor",
 	"displayName": "faioj-submittor",
 	"description": "A code submittor for OJ based on syzoj",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"engines": {
 		"vscode": "^1.41.0"
 	},
@@ -13,6 +13,11 @@
 		"onLanguage:cpp"
 	],
 	"main": "./out/extension.js",
+	"icon": "assets/faioj_favicon.ico",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CrSjimo/vscode-faioj-submit.git"
+	},
 	"contributes": {
 		"commands": [
 			{
@@ -75,7 +80,7 @@
 			"properties": {
 				"faiojSubmittor.hostname": {
 					"type": "string",
-					"default": "47.93.246.11",
+					"default": "faioj.brynhild.online",
 					"description": "OJ Hostname."
 				},
 				"faiojSubmittor.cookie": {
