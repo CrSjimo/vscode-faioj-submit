@@ -131,7 +131,7 @@
 		"jsdom": "^16.1.0",
 		"md5": "^2.2.1",
 		"utf-8-validate": "^5.0.2",
-		"xmldom": "^0.2.1",
+		"xmldom": "^0.6.0",
 		"xpath": "0.0.27"
 	},
 	"publisher": "crindzebra"
