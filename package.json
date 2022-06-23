@@ -128,7 +128,7 @@
 		"@types/xmldom": "^0.1.29",
 		"bufferutil": "^4.0.1",
 		"form-data": "^3.0.0",
-		"jsdom": "^16.1.0",
+		"jsdom": "^16.5.0",
 		"md5": "^2.2.1",
 		"utf-8-validate": "^5.0.2",
 		"xmldom": "^0.2.1",
